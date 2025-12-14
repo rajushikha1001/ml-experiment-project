@@ -6,7 +6,7 @@ from src.data_processing import load_data, process_data, split_data
 def track_experiment():
     """Track the machine learning experiment using MLflow."""
     # Load and process data
-    data = load_data('/data/raw/dataset.csv')
+    data = load_data('data/raw/dataset.csv')
     data = process_data(data)
     X_train, X_test, y_train, y_test = split_data(data)
 

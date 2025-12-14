@@ -1,18 +1,28 @@
 from flask import Flask, request, jsonify
-import mlflow
 import mlflow.sklearn
 
 app = Flask(__name__)
 
-# Load the trained model
-model = mlflow.sklearn.load_model('models/model')
+_model = None  # private cache
 
-@app.route('/predict', methods=['POST'])
+
+def get_model():
+    """
+    Lazily load ML model.
+    This prevents crashes during import, testing, and CI.
+    """
+    global _model
+    if _model is None:
+        _model = mlflow.sklearn.load_model("models/model")
+    return _model
+
+
+@app.route("/predict", methods=["POST"])
 def predict():
-    data = request.get_json()  # Get input data
-    features = data['features']
-    prediction = model.predict([features])  # Predict using the loaded model
-    return jsonify({'prediction': prediction.tolist()})
+    payload = request.get_json()
+    features = payload["features"]
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    model = get_model()
+    prediction = model.predict([features])
+
+    return jsonify({"prediction": prediction.tolist()})
